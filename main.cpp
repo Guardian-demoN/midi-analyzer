@@ -1,9 +1,15 @@
 #include <string.h>
 #include <iostream>
+
+#define DEBUG_SHOW_HEADER true
+#define DEBUG_SHOW_META_EVENT true
+#define DEBUG_SHOW_LENGTH false
+
 #include "readLSB.cpp"
 #include "eventTypes.cpp"
 #include "trackHeader.cpp"
 #include "trackChunk.cpp"
+
 
 using namespace std;
 
@@ -11,7 +17,10 @@ using namespace std;
 // extern uint32_t readLSB32(uint8_t* arr);
 // extern uint64_t readVQL(uint8_t *arr, uint32_t *count);
 
-#define BUFFER_LENGTH 2000
+// header : 14
+// 
+
+#define BUFFER_LENGTH 20000
 uint8_t buffer[BUFFER_LENGTH];
 
 #define PATH_LENGTH 256
@@ -20,7 +29,6 @@ char filePath[PATH_LENGTH];
 bool getDirectory(char *str, size_t len, char *buffer)
 {
     char c;
-    printf("%d ", len);
     for (size_t i = len - 1; i >= 0; i--)
     {
         c = str[i];
@@ -36,31 +44,54 @@ bool getDirectory(char *str, size_t len, char *buffer)
 int main(int argc, char **argv)
 {
     printf("%s\n", argv[0]);
-    // printf("%d\n", sizeof(argv[0]));
+
+    // get file path
     getDirectory(argv[0], strlen(argv[0]), filePath);
-    printf("%s\n", filePath);
-    strcat(filePath, "\\resource\\MIDI_sample.mid");
-    printf("%s\n", filePath);
+    strcat(filePath, "\\resource\\b5open.mid");
+
+    // read file
     FILE *readFile = fopen(filePath, "rb");
     if (readFile == NULL)
     {
         printf("no file detected.");
         return 1;
     }
+
+    // get file length
+    fseek(readFile, 0L, SEEK_END);
+    uint32_t fileLength = ftell(readFile);
+    printf("[file length]%d\n", fileLength);
+    rewind(readFile);
+
+    // copy file into buffer
     fread(buffer, 1, sizeof(buffer), readFile);
+
+    // parse header
     Header header;
-    int index = parseHeader(&header, buffer);
+    uint32_t index = parseHeader(&header, buffer);
+    uint32_t headerLength = index;
     if (index == -1)
     {
         printf("header invalid");
         return 1;
     }
-    Track track;
-    index = parseTrack(&track, buffer + index);
-    if (index == -1)
+    // 14 230 8 252
+    // parse track
+    while (index < fileLength)
     {
-        printf("track invalid");
-        return 1;
+        // #if DEBUG_SHOW_LENGTH == true
+        printf("[index]%d\n", index);
+        // #endif
+        Track track;
+        index = parseTrack(&track, buffer, index);
+        if (index == -1)
+        {
+            printf("track invalid");
+            return 1;
+        }
+        #if DEBUG_SHOW_LENGTH == true
+        printf("[final index]%07X0 %02X %d\n", (index) / 16, (index) % 16, index);
+        #endif
     }
     return 0;
 }

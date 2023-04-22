@@ -1,17 +1,8 @@
 #pragma once
 #include <iostream>
+#include "types.cpp"
 #include "readLSB.cpp"
 
-typedef struct header
-{
-    uint32_t length;
-    uint16_t format;
-    uint16_t ntrks;
-    bool divisionSMPTEMode;
-    uint16_t ticksPerQNote;
-    uint8_t SMPTE;
-    uint8_t ticksPerFrame;
-} Header;
 
 int parseHeader(Header *header, uint8_t *arr)
 {
@@ -31,7 +22,6 @@ int parseHeader(Header *header, uint8_t *arr)
     header->format = readLSB16(arr + 8);
     header->ntrks = readLSB16(arr + 10);
 
-    printf("%d ", arr[12]);
     if ((arr[12] & 0b10000000) == 0)
     {
         // ticks per quarter-note
@@ -45,11 +35,13 @@ int parseHeader(Header *header, uint8_t *arr)
         header->ticksPerFrame = arr[13];
     }
 
+#if DEBUG_SHOW_HEADER == true
     printf("[header]length: %d\n", header->length);
     printf("[header]format: %d\n", header->format);
     printf("[header]ntrks : %d\n", header->ntrks);
     printf("[header]division : %d\n", header->divisionSMPTEMode);
     printf("[header]QNote    : %d\n", header->ticksPerQNote);
+#endif
 
     return 14;
 }
