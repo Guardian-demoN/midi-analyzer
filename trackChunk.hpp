@@ -1,48 +1,56 @@
 #pragma once
-#include <iostream>
-#include "types.cpp"
-#include "readLSB.cpp"
-#include "eventTypes.cpp"
-#include "showMetaEventData.cpp"
 
+#include <stdio.h>
+
+#include "types.cpp"
+#include "readLSB.hpp"
+#include "metaEvent.hpp"
+#include "midiEvent.hpp"
+#include "metaEvent_show.hpp"
+
+MetaEvent handleMetaEvent(uint8_t *arr, uint32_t offset, uint32_t *length);
 
 MetaEvent handleEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
 {
-    MetaEvent event;
-    uint32_t timeCount;
-    uint32_t lenCount;
     uint8_t *data = arr + offset;
+
+    uint32_t timeCount;
+    readVQL(data, &timeCount);
+    if (data[timeCount] == 0xFF)
+    {
+        handleMetaEvent(arr, offset, length);
+    }
+    else
+    {
+        handleMidiEvent(arr, offset, length);
+    }
+}
+
+MetaEvent handleMetaEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
+{
+    MetaEvent event;
+    uint8_t *data = arr + offset;
+
+    uint32_t timeCount; // deltaTime VQL
+    uint32_t lenCount; // length VQL
 
     strcpy(event.description, "");
 
     // timeCount가 몇 개인지 모르기 때문에 여기에 추가 필요
     event.deltaTime = readVQL(data, &timeCount);
-    handleMetaEventDescription(&event, data, timeCount);
-    if (strlen(event.description) == 0)
-    {
-        printf("Error: No event registered.\n");
-        exit(1);
-    }
+
     // time catg type leng vari
     // VQL  1    1    VQL  leng
-
-    event.type[0] = data[timeCount];
-    event.type[1] = data[timeCount + 1];
+    // FF는 timeCount라서 패스(MetaEvent라서 고정)
+    event.type = data[timeCount + 1];
     event.length = readVQL(data + timeCount + 2, &lenCount);
 
     // deltatTime + 'FF' + 'type' + length
-    handleMetaEventVariable(&event, data + timeCount + 2 + lenCount);
+    handleMetaEventVariable(&event, data, timeCount + lenCount + 2);
     *length = event.length + timeCount + 2 + lenCount;
 
 #if DEBUG_SHOW_META_EVENT == true
-    printf("[MetaEvent]");
-    for (size_t i = 0; i < *length; i++)
-    {
-        printf("%02X ", data[i]);
-    }
-    printf("\n");
-
-    showMetaEventData(&event);
+    showMetaEventData(&event, arr, offset, *length);
 #endif
 
     return event;
@@ -51,12 +59,13 @@ MetaEvent handleEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
 int parseTrack(Track *track, uint8_t *arr, uint32_t offset)
 {
     uint8_t *data = (arr + offset);
+    
     // Track :=
     //     <chunk type>
     //     <length>
     //     <MTrk event>+
     const uint8_t magicNumber[4] = {'M', 'T', 'r', 'k'};
-    for (size_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < 4; i++)
     {
         if (data[i] != magicNumber[i])
             return -1;
@@ -71,19 +80,15 @@ int parseTrack(Track *track, uint8_t *arr, uint32_t offset)
 #if DEBUG_SHOW_LENGTH == true
     printf("[track]length      : %d\n", track->length);
 #endif
-    // printf("[track]deltaTime   : %d\n", track->deltaTime);
-    // printf("[VQL]timeLength    : %d\n", timeLength);
 
     uint32_t metaEventLength = 0;
     uint32_t tempLength = 0;
 
     while (metaEventLength < track->length)
     {
-// initial 22
-#if DEBUG_SHOW_LENGTH == true
-        printf("current position: %07X0 %02X %d\n", (14 + 8 + metaEventLength) / 16, (14 + 8 + metaEventLength) % 16, 14 + 8 + metaEventLength);
-#endif
-        handleEvent(data, 8 + metaEventLength, &tempLength);
+        // initial 22
+        // handleEvent(data, 8 + metaEventLength, &tempLength);
+        handleEvent(arr, offset + 8 + metaEventLength, &tempLength);
         metaEventLength += tempLength;
 #if DEBUG_SHOW_LENGTH == true
         printf("[tempLength]%d\n", metaEventLength);

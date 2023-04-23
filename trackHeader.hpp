@@ -1,7 +1,9 @@
 #pragma once
+
 #include <iostream>
-#include "types.cpp"
-#include "readLSB.cpp"
+
+#include "types.hpp"
+#include "readLSB.hpp"
 
 
 int parseHeader(Header *header, uint8_t *arr)
@@ -13,7 +15,8 @@ int parseHeader(Header *header, uint8_t *arr)
     //     <ntrks>
     //     <division>
     const uint8_t magicNumber[4] = {'M', 'T', 'h', 'd'};
-    for (size_t i = 0; i < 4; i++)
+
+    for (uint8_t i = 0; i < 4; i++)
     {
         if (arr[i] != magicNumber[i])
             return -1;
@@ -25,12 +28,12 @@ int parseHeader(Header *header, uint8_t *arr)
     if ((arr[12] & 0b10000000) == 0)
     {
         // ticks per quarter-note
-        header->divisionSMPTEMode = false;
+        header->divisionSMPTEMode = 0;
         header->ticksPerQNote = readLSB16(arr + 12);
     }
     else
     {
-        header->divisionSMPTEMode = true;
+        header->divisionSMPTEMode = 1;
         header->SMPTE = arr[12] &= 0b01111111;
         header->ticksPerFrame = arr[13];
     }

@@ -1,17 +1,14 @@
+#include <stdio.h>
 #include <string.h>
-#include <iostream>
 
-#define DEBUG_SHOW_HEADER true
-#define DEBUG_SHOW_META_EVENT true
-#define DEBUG_SHOW_LENGTH false
+#define DEBUG_SHOW_HEADER 1
+#define DEBUG_SHOW_META_EVENT 1 
+#define DEBUG_SHOW_LENGTH 0
 
-#include "readLSB.cpp"
-#include "eventTypes.cpp"
-#include "trackHeader.cpp"
-#include "trackChunk.cpp"
-
-
-using namespace std;
+#include "readLSB.hpp"
+#include "metaEvent.hpp"
+#include "trackHeader.hpp"
+#include "trackChunk.hpp"
 
 // extern uint16_t readLSB16(uint8_t* arr);
 // extern uint32_t readLSB32(uint8_t* arr);
@@ -26,19 +23,19 @@ uint8_t buffer[BUFFER_LENGTH];
 #define PATH_LENGTH 256
 char filePath[PATH_LENGTH];
 
-bool getDirectory(char *str, size_t len, char *buffer)
+uint8_t getDirectory(char *str, uint8_t len, char *buffer)
 {
     char c;
-    for (size_t i = len - 1; i >= 0; i--)
+    for (uint8_t  i = len - 1; i >= 0; i--)
     {
         c = str[i];
         if (c == '\\' || c == '/')
         {
             strncpy(buffer, str, i);
-            return true;
+            return 1;
         }
     }
-    return false;
+    return 0;
 }
 
 int main(int argc, char **argv)
@@ -79,9 +76,7 @@ int main(int argc, char **argv)
     // parse track
     while (index < fileLength)
     {
-        // #if DEBUG_SHOW_LENGTH == true
-        printf("[index]%d\n", index);
-        // #endif
+        printf("========== ========== [Track] ========== ==========\n");
         Track track;
         index = parseTrack(&track, buffer, index);
         if (index == -1)
@@ -89,9 +84,6 @@ int main(int argc, char **argv)
             printf("track invalid");
             return 1;
         }
-        #if DEBUG_SHOW_LENGTH == true
-        printf("[final index]%07X0 %02X %d\n", (index) / 16, (index) % 16, index);
-        #endif
     }
     return 0;
 }
