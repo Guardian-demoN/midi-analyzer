@@ -58,14 +58,7 @@ int parseTrack(Track *track, uint8_t *arr, uint32_t offset)
         // handleEvent(data, 8 + metaEventLength, &tempLength);
         handleEvent(arr, offset + 8 + metaEventLength, &tempLength);
         metaEventLength += tempLength;
-#if DEBUG_SHOW_LENGTH == true
-        printf("[tempLength]%d\n", metaEventLength);
-#endif
     }
 // 'MTrk' + length(4) + track = 8 + track
-#if DEBUG_SHOW_LENGTH == true
-    printf("[length calc]track.length: %d\n", track->length);
-    printf("[length calc]pffset      : %d\n", offset);
-#endif
     return track->length + 8 + offset;
 }

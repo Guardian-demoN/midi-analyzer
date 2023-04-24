@@ -38,13 +38,11 @@ int parseHeader(Header *header, uint8_t *arr)
         header->ticksPerFrame = arr[13];
     }
 
-#if DEBUG_SHOW_HEADER == true
     printf("[header]length: %d\n", header->length);
     printf("[header]format: %d\n", header->format);
     printf("[header]ntrks : %d\n", header->ntrks);
     printf("[header]division : %d\n", header->divisionSMPTEMode);
     printf("[header]QNote    : %d\n", header->ticksPerQNote);
-#endif
-
+    
     return 14;
 }

@@ -2,7 +2,6 @@
 #include <string.h>
 
 #define DEBUG_SHOW_HEADER 1
-#define DEBUG_SHOW_LENGTH 0
 
 #include "readLSB.hpp"
 #include "metaEvent.hpp"
