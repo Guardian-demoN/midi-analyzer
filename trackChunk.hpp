@@ -26,40 +26,12 @@ MetaEvent handleEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
     }
 }
 
-MetaEvent handleMetaEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
-{
-    MetaEvent event;
-    uint8_t *data = arr + offset;
 
-    uint32_t timeCount; // deltaTime VQL
-    uint32_t lenCount; // length VQL
-
-    strcpy(event.description, "");
-
-    // timeCount가 몇 개인지 모르기 때문에 여기에 추가 필요
-    event.deltaTime = readVQL(data, &timeCount);
-
-    // time catg type leng vari
-    // VQL  1    1    VQL  leng
-    // FF는 timeCount라서 패스(MetaEvent라서 고정)
-    event.type = data[timeCount + 1];
-    event.length = readVQL(data + timeCount + 2, &lenCount);
-
-    // deltatTime + 'FF' + 'type' + length
-    handleMetaEventVariable(&event, data, timeCount + lenCount + 2);
-    *length = event.length + timeCount + 2 + lenCount;
-
-#if DEBUG_SHOW_META_EVENT == true
-    showMetaEventData(&event, arr, offset, *length);
-#endif
-
-    return event;
-}
 
 int parseTrack(Track *track, uint8_t *arr, uint32_t offset)
 {
     uint8_t *data = (arr + offset);
-    
+
     // Track :=
     //     <chunk type>
     //     <length>
@@ -76,10 +48,6 @@ int parseTrack(Track *track, uint8_t *arr, uint32_t offset)
     // +8부터
 
     // track->deltaTime = readVQL(data + 8, &timeLength);
-
-#if DEBUG_SHOW_LENGTH == true
-    printf("[track]length      : %d\n", track->length);
-#endif
 
     uint32_t metaEventLength = 0;
     uint32_t tempLength = 0;

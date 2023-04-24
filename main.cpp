@@ -2,7 +2,6 @@
 #include <string.h>
 
 #define DEBUG_SHOW_HEADER 1
-#define DEBUG_SHOW_META_EVENT 1 
 #define DEBUG_SHOW_LENGTH 0
 
 #include "readLSB.hpp"
@@ -44,7 +43,7 @@ int main(int argc, char **argv)
 
     // get file path
     getDirectory(argv[0], strlen(argv[0]), filePath);
-    strcat(filePath, "\\resource\\b5open.mid");
+    strcat(filePath, "\\resource\\After_You've_Gone_chorus_Nashville_Number_System_score.mid");
 
     // read file
     FILE *readFile = fopen(filePath, "rb");
@@ -74,9 +73,10 @@ int main(int argc, char **argv)
     }
     // 14 230 8 252
     // parse track
+    uint8_t trackIndex = 1;
     while (index < fileLength)
     {
-        printf("========== ========== [Track] ========== ==========\n");
+        printf(">> [Track #%d]\n", trackIndex);
         Track track;
         index = parseTrack(&track, buffer, index);
         if (index == -1)

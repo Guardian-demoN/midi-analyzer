@@ -5,9 +5,10 @@
 #include <math.h>
 #include "types.hpp"
 #include "readLSB.hpp"
+#include "midiEvent_show.hpp"
 
 void handleMidiEventVariable(MidiEvent *event, uint8_t *arr, uint32_t variableOffset);
-void showMidiEventData(MidiEvent *event, uint8_t *arr, uint32_t offset, uint32_t length);
+void showMidiEventDataDetail(MidiEvent *event, uint8_t *arr, uint32_t offset, uint32_t length);
 MidiEvent handleMidiEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
 {
     MidiEvent event;
@@ -20,17 +21,21 @@ MidiEvent handleMidiEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
     // timeCount가 몇 개인지 모르기 때문에 여기에 추가 필요
     event.deltaTime = readVQL(data, &timeCount);
 
-
     // time catg vari
     // VQL  1    leng
     event.type = data[timeCount] & 0xF0;
     event.channelNo = (data[timeCount] & 0x0F) + 1;
+    // printf("[type]%02X\n", event.type);
 
     // length는 따로 값이 주어지지 않기 때문에 showMidiEventData 내부에서 처리
     handleMidiEventVariable(&event, data, timeCount + 1);
-    showMidiEventData(&event, arr, offset, *length);
-
     *length = timeCount + 1 + event.length;
+
+    if(false){
+    showMidiEventDataDetail(&event, arr, offset, *length);
+    }else{
+        showMidiEventData(&event, arr, offset, *length);
+    }
 }
 
 void handleMidiEventVariable(MidiEvent *event, uint8_t *arr, uint32_t variableOffset)
@@ -98,46 +103,6 @@ void handleMidiEventVariable(MidiEvent *event, uint8_t *arr, uint32_t variableOf
     default:
         printf("Error: No midi event registered.\n");
         exit(1);
-        break;
-    }
-}
-
-void showMidiEventData(MidiEvent *event, uint8_t *arr, uint32_t offset, uint32_t length)
-{
-    uint8_t *data = arr + offset;
-
-    printf("========== ========== <MidiEvent> ========== ==========\n");
-    printf("currentPos: %07X0 %02X %d\n", offset / 16, offset % 16, offset);
-    printf("raw       : ");
-    for (uint32_t i = 0; i < event->length; i++)
-    {
-        printf("%02X ", data[i]);
-    }
-    printf("\n");
-    printf("deltaTime : %d\n", event->deltaTime);
-    printf("tHex      : %02X\n", event->type);
-    printf("descript  : %s\n", event->description);
-    printf("length    : %d\n", event->length);
-    printf("channel   : %d\n", event->channelNo);
-
-    switch (event->type)
-    {
-    case 0x00:
-        break;
-
-    case 0x80:
-        printf("NoteNumber: %d\n", event->noteNo);
-        printf("Velocity  : %d\n", event->velocity);
-        break;
-    case 0x90:
-        printf("NoteNumber: %d\n", event->noteNo);
-        printf("Velocity  : %d\n", event->velocity);
-        break;
-
-    case 0xC0:
-        printf("program   : %d\n", event->programNo);
-        break;
-    case 0x59:
         break;
     }
 }
