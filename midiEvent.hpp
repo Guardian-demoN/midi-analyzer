@@ -9,7 +9,7 @@
 
 void handleMidiEventVariable(MidiEvent *event, uint8_t *arr, uint32_t variableOffset);
 void showMidiEventDataDetail(MidiEvent *event, uint8_t *arr, uint32_t offset, uint32_t length);
-MidiEvent handleMidiEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
+void handleMidiEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
 {
     MidiEvent event;
     uint8_t *data = arr + offset;

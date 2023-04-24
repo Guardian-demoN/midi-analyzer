@@ -10,7 +10,7 @@
 
 MetaEvent handleMetaEvent(uint8_t *arr, uint32_t offset, uint32_t *length);
 
-MetaEvent handleEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
+void handleEvent(uint8_t *arr, uint32_t offset, uint32_t *length)
 {
     uint8_t *data = arr + offset;
 

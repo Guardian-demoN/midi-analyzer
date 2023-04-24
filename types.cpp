@@ -29,21 +29,21 @@ const char *parseEnum(KeySign keySign)
 
 KeySign toKeySign(uint8_t value)
 {
-    switch (value)
+    switch (value + 7)
     {
-    case -7:
+    case 0:
         return flat7;
         break;
-    case -1:
+    case 6:
         return flat1;
         break;
-    case 0:
+    case 7:
         return keyOfC;
         break;
-    case 1:
+    case 8:
         return sharp1;
         break;
-    case 7:
+    case 14:
         return sharp7;
         break;
     }
